@@ -1,18 +1,10 @@
 {
-  "cli": {
-    "version": ">= 12.6.0"
-  },
+  "cli": { "version": ">= 12.6.0" },
   "build": {
     "production": {
-      "android": {
-        "buildType": "apk"
-      },
-      "env": {
-        "EXPO_NO_DOCTOR": "true"
-      },
-      "cache": {
-        "disabled": true
-      }
+      "android": { "buildType": "apk" },
+      "env": { "EXPO_NO_DOCTOR": "true" },
+      "cache": { "disabled": true }
     }
   }
 }
