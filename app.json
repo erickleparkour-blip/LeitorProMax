@@ -8,6 +8,18 @@
       "versionCode": 1
     },
     "owner": "erickrei5",
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 34,
+            "targetSdkVersion": 34,
+            "buildToolsVersion": "34.0.0"
+          }
+        }
+      ]
+    ],
     "extra": {
       "eas": {
         "projectId": "ed8ac310-c4e7-495a-bb21-3a167c76c1d4"
