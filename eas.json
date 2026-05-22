@@ -7,7 +7,11 @@
       "android": {
         "buildType": "apk",
         "image": "latest",
-        "node": "18.18.0"
+        "node": "18.18.0",
+        "env": {
+          "EAS_BUILD_SKIP_AUTO_FIX": "true",
+          "CI": "1"
+        }
       }
     }
   }
