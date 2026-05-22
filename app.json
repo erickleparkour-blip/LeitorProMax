@@ -1,0 +1,10 @@
+{
+  "expo": {
+    "name": "Leitor Pro Max",
+    "slug": "leitorpromax",
+    "version": "1.0.0",
+    "android": {
+      "package": "com.erickleparkour.leitorpromax"
+    }
+  }
+}
