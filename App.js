@@ -1,276 +1,195 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, Button, ScrollView, Alert, TextInput, TouchableOpacity, Switch, Linking, Image, Dimensions } from 'react-native';
-import * as DocumentPicker from 'expo-document-picker';
-import * as FileSystem from 'expo-file-system';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import * as Speech from 'expo-speech';
-import * as ImagePicker from 'expo-image-picker';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import Pdf from 'react-native-pdf';
-import { WebView } from 'react-native-webview';
-
-const { width, height } = Dimensions.get('window');
+import * as DocumentPicker from 'expo-document-picker';
 
 export default function App() {
-  const [aba, setAba] = useState('biblioteca');
-  const [livros, setLivros] = useState([]);
-  const [livroAtual, setLivroAtual] = useState(null);
-  const [texto, setTexto] = useState('Clique em ADICIONAR LIVRO para começar.');
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  const [isDark, setIsDark] = useState(false);
-  const [rate, setRate] = useState(0.9);
-  const [vozes, setVozes] = useState([]);
-  const [vozSelecionada, setVozSelecionada] = useState(null);
-  const [termoBusca, setTermoBusca] = useState('');
-  const [chatUrl, setChatUrl] = useState('https://chat.openai.com/');
-  const [pdfPath, setPdfPath] = useState(null);
-  const [numPages, setNumPages] = useState(0);
-  const [paginaAtual, setPaginaAtual] = useState(1);
+  const [texto, setTexto] = useState('Cole seu texto aqui ou importe um arquivo TXT');
+  const [falando, setFalando] = useState(false);
+  const [pausado, setPausado] = useState(false);
+  const [modoEscuro, setModoEscuro] = useState(true);
 
   useEffect(() => {
-    Speech.getAvailableVoicesAsync().then(v => {
-      const pt = v.filter(x => x.language.startsWith('pt'));
-      setVozes(pt);
-      setVozSelecionada(pt.find(x => x.language === 'pt-BR')?.identifier || pt[0]?.identifier);
-    });
-    carregarLivros();
-    carregarConfig();
+    return () => {
+      Speech.stop();
+    };
   }, []);
 
-  const carregarLivros = async () => {
-    const salvos = await AsyncStorage.getItem('biblioteca_v4');
-    if (salvos) setLivros(JSON.parse(salvos));
-  };
-
-  const carregarConfig = async () => {
-    const dark = await AsyncStorage.getItem('darkMode');
-    const rateSalvo = await AsyncStorage.getItem('rate');
-    if (dark) setIsDark(JSON.parse(dark));
-    if (rateSalvo) setRate(parseFloat(rateSalvo));
-  };
-
-  const salvarLivros = async (novosLivros) => {
-    setLivros(novosLivros);
-    await AsyncStorage.setItem('biblioteca_v4', JSON.stringify(novosLivros));
-  };
-
-  const adicionarLivro = async () => {
+  const escolherArquivo = async () => {
     try {
-      const result = await DocumentPicker.getDocumentAsync({
-        type: ['application/pdf', 'text/plain'],
+      const resultado = await DocumentPicker.getDocumentAsync({
+        type: 'text/plain',
         copyToCacheDirectory: true
       });
 
-      if (!result.canceled) {
-        const arquivo = result.assets[0];
-        const novoLivro = {
-          id: Date.now().toString(),
-          nome: arquivo.name,
-          uri: arquivo.uri,
-          tipo: arquivo.mimeType,
-          data: new Date().toLocaleDateString()
-        };
-        const novosLivros = [...livros, novoLivro];
-        await salvarLivros(novosLivros);
-        Alert.alert('Sucesso', 'Livro adicionado à biblioteca!');
+      if (!resultado.canceled && resultado.assets[0]) {
+        const arquivo = resultado.assets[0];
+        const response = await fetch(arquivo.uri);
+        const conteudo = await response.text();
+        setTexto(conteudo);
+        Alert.alert('Sucesso', 'Arquivo carregado!');
       }
-    } catch (e) {
-      Alert.alert('Erro', 'Não foi possível adicionar o livro');
+    } catch (erro) {
+      Alert.alert('Erro', 'Não foi possível ler o arquivo');
     }
   };
 
-  const abrirLivro = async (livro) => {
-    setLivroAtual(livro);
-    if (livro.tipo === 'application/pdf') {
-      setPdfPath(livro.uri);
-      setAba('leitor');
-    } else {
-      const conteudo = await FileSystem.readAsStringAsync(livro.uri);
-      setTexto(conteudo);
-      setAba('leitor');
+  const iniciarLeitura = () => {
+    if (texto.trim() === '') {
+      Alert.alert('Atenção', 'Digite ou importe um texto primeiro');
+      return;
     }
-  };
 
-  const falar = () => {
-    if (isSpeaking) {
-      Speech.stop();
-      setIsSpeaking(false);
-    } else {
-      Speech.speak(texto, {
-        language: 'pt-BR',
-        voice: vozSelecionada,
-        rate: rate,
-        onDone: () => setIsSpeaking(false),
-        onStopped: () => setIsSpeaking(false)
-      });
-      setIsSpeaking(true);
-    }
-  };
-
-  const deletarLivro = (id) => {
-    Alert.alert('Deletar', 'Quer remover este livro?', [
-      { text: 'Cancelar' },
-      {
-        text: 'Deletar',
-        onPress: () => {
-          const novosLivros = livros.filter(l => l.id!== id);
-          salvarLivros(novosLivros);
-        }
+    Speech.stop();
+    Speech.speak(texto, {
+      language: 'pt-BR',
+      pitch: 1.0,
+      rate: 1.0,
+      onStart: () => {
+        setFalando(true);
+        setPausado(false);
+      },
+      onDone: () => {
+        setFalando(false);
+        setPausado(false);
+      },
+      onStopped: () => {
+        setFalando(false);
+        setPausado(false);
+      },
+      onError: () => {
+        setFalando(false);
+        setPausado(false);
+        Alert.alert('Erro', 'Erro na síntese de voz');
       }
-    ]);
+    });
   };
 
-  const toggleDark = () => {
-    const novo =!isDark;
-    setIsDark(novo);
-    AsyncStorage.setItem('darkMode', JSON.stringify(novo));
+  const pausarRetomar = async () => {
+    if (pausado) {
+      await Speech.resume();
+      setPausado(false);
+    } else {
+      await Speech.pause();
+      setPausado(true);
+    }
   };
 
-  const mudarRate = (novoRate) => {
-    setRate(novoRate);
-    AsyncStorage.setItem('rate', novoRate.toString());
+  const pararLeitura = () => {
+    Speech.stop();
+    setFalando(false);
+    setPausado(false);
   };
 
-  const tema = {
-    bg: isDark? '#1a1a1a' : '#f5f5f5',
-    card: isDark? '#2d2d2d' : '#fff',
-    texto: isDark? '#fff' : '#000',
-    borda: isDark? '#444' : '#ddd',
-    primario: '#6200ee'
-  };
-
-  const livrosFiltrados = livros.filter(l =>
-    l.nome.toLowerCase().includes(termoBusca.toLowerCase())
-  );
+  const tema = modoEscuro? temaEscuro : temaClaro;
 
   return (
-    <View style={[styles.container, { backgroundColor: tema.bg }]}>
-      <View style={[styles.header, { backgroundColor: tema.primario }]}>
-        <Text style={styles.titulo}>Leitor Pro Max</Text>
-        <Switch value={isDark} onValueChange={toggleDark} />
+    <View style={[styles.container, { backgroundColor: tema.fundo }]}>
+      <View style={styles.header}>
+        <Text style={[styles.titulo, { color: tema.destaque }]}>Leitor Pro Max</Text>
+        <TouchableOpacity style={[styles.botaoTema, { backgroundColor: tema.botao }]} onPress={() => setModoEscuro(!modoEscuro)}>
+          <Text style={[styles.textoBotao, { color: tema.textoBotao }]}>{modoEscuro? '☀️ Claro' : '🌙 Escuro'}</Text>
+        </TouchableOpacity>
       </View>
 
-      <View style={styles.tabs}>
-        {['biblioteca', 'leitor', 'ia', 'config'].map(t => (
-          <TouchableOpacity key={t} onPress={() => setAba(t)} style={[styles.tab, aba === t && styles.tabAtiva]}>
-            <Text style={[styles.tabTexto, aba === t && styles.tabTextoAtiva]}>{t.toUpperCase()}</Text>
+      <ScrollView style={[styles.caixaTexto, { backgroundColor: tema.caixa }]}>
+        <Text style={[styles.texto, { color: tema.texto }]}>{texto}</Text>
+      </ScrollView>
+
+      <TouchableOpacity style={[styles.botaoArquivo, { backgroundColor: tema.botao }]} onPress={escolherArquivo}>
+        <Text style={[styles.textoBotao, { color: tema.textoBotao }]}>📄 Importar TXT</Text>
+      </TouchableOpacity>
+
+      <View style={styles.controles}>
+        {!falando? (
+          <TouchableOpacity style={[styles.botao, { backgroundColor: tema.botaoLer }]} onPress={iniciarLeitura}>
+            <Text style={[styles.textoBotao, { color: '#fff' }]}>▶️ Ler</Text>
           </TouchableOpacity>
-        ))}
-      </View>
-
-      {aba === 'biblioteca' && (
-        <View style={styles.content}>
-          <TextInput
-            style={[styles.input, { backgroundColor: tema.card, color: tema.texto, borderColor: tema.borda }]}
-            placeholder="Buscar livro..."
-            placeholderTextColor={isDark? '#888' : '#999'}
-            value={termoBusca}
-            onChangeText={setTermoBusca}
-          />
-          <Button title="ADICIONAR LIVRO PDF/TXT" onPress={adicionarLivro} color={tema.primario} />
-          <ScrollView style={styles.lista}>
-            {livrosFiltrados.map(livro => (
-              <TouchableOpacity
-                key={livro.id}
-                style={[styles.cardLivro, { backgroundColor: tema.card, borderColor: tema.borda }]}
-                onPress={() => abrirLivro(livro)}
-                onLongPress={() => deletarLivro(livro.id)}
-              >
-                <Text style={[styles.nomeLivro, { color: tema.texto }]}>{livro.nome}</Text>
-                <Text style={[styles.dataLivro, { color: isDark? '#aaa' : '#666' }]}>{livro.data}</Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
-      )}
-
-      {aba === 'leitor' && (
-        <View style={styles.content}>
-          {pdfPath? (
-            <View style={{ flex: 1 }}>
-              <Pdf
-                source={{ uri: pdfPath }}
-                onLoadComplete={(numberOfPages) => setNumPages(numberOfPages)}
-                onPageChanged={(page) => setPaginaAtual(page)}
-                style={[styles.pdf, { backgroundColor: tema.bg }]}
-              />
-              <Text style={[styles.paginacao, { color: tema.texto }]}>
-                Página {paginaAtual} de {numPages}
-              </Text>
-            </View>
-          ) : (
-            <ScrollView style={[styles.areaTexto, { backgroundColor: tema.card, borderColor: tema.borda }]}>
-              <Text style={[styles.textoLivro, { color: tema.texto }]}>{texto}</Text>
-            </ScrollView>
-          )}
-          <View style={styles.controles}>
-            <Button title={isSpeaking? "PARAR" : "LER"} onPress={falar} color={tema.primario} />
-            <Text style={[styles.labelRate, { color: tema.texto }]}>Velocidade: {rate.toFixed(1)}x</Text>
-            <View style={styles.botoesRate}>
-              <Button title="-" onPress={() => mudarRate(Math.max(0.5, rate - 0.1))} />
-              <Button title="+" onPress={() => mudarRate(Math.min(2.0, rate + 0.1))} />
-            </View>
-          </View>
-        </View>
-      )}
-
-      {aba === 'ia' && (
-        <View style={styles.content}>
-          <TextInput
-            style={[styles.input, { backgroundColor: tema.card, color: tema.texto, borderColor: tema.borda }]}
-            placeholder="URL do Chat IA"
-            placeholderTextColor={isDark? '#888' : '#999'}
-            value={chatUrl}
-            onChangeText={setChatUrl}
-          />
-          <Button title="ABRIR CHAT" onPress={() => Linking.openURL(chatUrl)} color={tema.primario} />
-          <WebView source={{ uri: chatUrl }} style={styles.webview} />
-        </View>
-      )}
-
-      {aba === 'config' && (
-        <ScrollView style={styles.content}>
-          <Text style={[styles.label, { color: tema.texto }]}>Voz do Leitor:</Text>
-          {vozes.map(v => (
-            <TouchableOpacity
-              key={v.identifier}
-              style={[styles.opcaoVoz, { backgroundColor: tema.card, borderColor: vozSelecionada === v.identifier? tema.primario : tema.borda }]}
-              onPress={() => setVozSelecionada(v.identifier)}
-            >
-              <Text style={{ color: tema.texto }}>{v.name} - {v.language}</Text>
+        ) : (
+          <>
+            <TouchableOpacity style={[styles.botao, { backgroundColor: tema.botao }]} onPress={pausarRetomar}>
+              <Text style={[styles.textoBotao, { color: tema.textoBotao }]}>{pausado? '▶️ Continuar' : '⏸️ Pausar'}</Text>
             </TouchableOpacity>
-          ))}
-          <Text style={[styles.label, { color: tema.texto, marginTop: 20 }]}>Sobre:</Text>
-          <Text style={[styles.sobre, { color: tema.texto }]}>Leitor Pro Max v1.0.0{"\n"}PDF + TTS + IA{"\n"}Segure um livro para deletar</Text>
-        </ScrollView>
-      )}
+            <TouchableOpacity style={[styles.botao, { backgroundColor: tema.botaoParar }]} onPress={pararLeitura}>
+              <Text style={[styles.textoBotao, { color: '#fff' }]}>⏹️ Parar</Text>
+            </TouchableOpacity>
+          </>
+        )}
+      </View>
     </View>
   );
 }
 
+const temaEscuro = {
+  fundo: '#1a1a1a',
+  caixa: '#2a2a2a',
+  texto: '#ffffff',
+  destaque: '#00ff88',
+  botao: '#444444',
+  botaoLer: '#00aa44',
+  botaoParar: '#cc0000',
+  textoBotao: '#ffffff'
+};
+
+const temaClaro = {
+  fundo: '#ffffff',
+  caixa: '#f0f0f0',
+  texto: '#000000',
+  destaque: '#0066cc',
+  botao: '#dddddd',
+  botaoLer: '#00aa44',
+  botaoParar: '#cc0000',
+  textoBotao: '#000000'
+};
+
 const styles = StyleSheet.create({
-  container: { flex: 1, paddingTop: 40 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 15 },
-  titulo: { color: '#fff', fontSize: 20, fontWeight: 'bold' },
-  tabs: { flexDirection: 'row', borderBottomWidth: 1, borderColor: '#ddd' },
-  tab: { flex: 1, padding: 12, alignItems: 'center' },
-  tabAtiva: { borderBottomWidth: 3, borderColor: '#6200ee' },
-  tabTexto: { fontSize: 12, color: '#666' },
-  tabTextoAtiva: { color: '#6200ee', fontWeight: 'bold' },
-  content: { flex: 1, padding: 10 },
-  input: { borderWidth: 1, borderRadius: 8, padding: 12, marginBottom: 10 },
-  lista: { marginTop: 10 },
-  cardLivro: { padding: 15, borderRadius: 8, borderWidth: 1, marginBottom: 10 },
-  nomeLivro: { fontSize: 16, fontWeight: 'bold' },
-  dataLivro: { fontSize: 12, marginTop: 5 },
-  pdf: { flex: 1, width: width - 20 },
-  paginacao: { textAlign: 'center', padding: 10, fontWeight: 'bold' },
-  areaTexto: { flex: 1, borderWidth: 1, borderRadius: 8, padding: 15, marginBottom: 10 },
-  textoLivro: { fontSize: 16, lineHeight: 24 },
-  controles: { padding: 10 },
-  labelRate: { textAlign: 'center', marginVertical: 10, fontWeight: 'bold' },
-  botoesRate: { flexDirection: 'row', justifyContent: 'space-around' },
-  webview: { flex: 1, marginTop: 10 },
-  label: { fontSize: 16, fontWeight: 'bold', marginBottom: 10 },
-  opcaoVoz: { padding: 12, borderRadius: 8, borderWidth: 2, marginBottom: 8 },
-  sobre: { fontSize: 14, lineHeight: 22 }
+  container: {
+    flex: 1,
+    padding: 20,
+    paddingTop: 50
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20
+  },
+  titulo: {
+    fontSize: 28,
+    fontWeight: 'bold'
+  },
+  botaoTema: {
+    padding: 10,
+    borderRadius: 8
+  },
+  caixaTexto: {
+    flex: 1,
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 15
+  },
+  texto: {
+    fontSize: 16,
+    lineHeight: 24
+  },
+  botaoArquivo: {
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 15
+  },
+  controles: {
+    flexDirection: 'row',
+    justifyContent: 'space-around'
+  },
+  botao: {
+    padding: 15,
+    borderRadius: 10,
+    flex: 1,
+    marginHorizontal: 5
+  },
+  textoBotao: {
+    textAlign: 'center',
+    fontSize: 16,
+    fontWeight: 'bold'
+  }
 });
