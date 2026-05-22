@@ -3,11 +3,27 @@
     "name": "Leitor Pro Max",
     "slug": "leitor-pro-max",
     "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true
+    },
     "android": {
       "package": "com.erickleparkour.leitorpromax",
       "versionCode": 1,
       "compileSdkVersion": 34,
-      "targetSdkVersion": 34
+      "targetSdkVersion": 34,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      }
     },
     "owner": "erickrei5",
     "plugins": [
