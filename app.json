@@ -36,18 +36,4 @@
       }
     }
   }
-}    }
-  }
-}            "kotlinVersion": "1.8.10",
-            "minSdkVersion": 21
-          }
-        }
-      ]
-    ],
-    "extra": {
-      "eas": {
-        "projectId": "ed8ac310-c4e7-495a-bb21-3a167c76c1d4"
-      }
-    }
-  }
 }
