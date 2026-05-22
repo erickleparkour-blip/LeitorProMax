@@ -1,12 +1,17 @@
 {
   "expo": {
-    "name": "Leitor Pro",
-    "slug": "leitor-pro", 
+    "name": "Leitor Pro Max",
+    "slug": "leitor-pro-max",
     "version": "1.0.0",
     "android": {
-      "package": "com.erick.leitorpro",
+      "package": "com.erick.leitorpromax",
       "minSdkVersion": 23,
       "buildType": "apk"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "ed8ac310-c4e7-495a-bb21-3a167c76c1d4"
+      }
     }
   }
 }
