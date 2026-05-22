@@ -5,7 +5,9 @@
     "version": "1.0.0",
     "android": {
       "package": "com.erickleparkour.leitorpromax",
-      "versionCode": 1
+      "versionCode": 1,
+      "compileSdkVersion": 34,
+      "targetSdkVersion": 34
     },
     "owner": "erickrei5",
     "plugins": [
