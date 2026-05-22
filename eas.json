@@ -7,12 +7,8 @@
       "android": {
         "buildType": "apk",
         "image": "latest",
-        "node": "18.18.0",
-        "env": {
-          "EXPO_USE_LOCAL_CREDENTIALS": "true"
-        }
+        "node": "18.18.0"
       }
-    },
-    "production": {}
+    }
   }
 }
