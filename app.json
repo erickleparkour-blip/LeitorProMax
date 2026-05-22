@@ -3,14 +3,6 @@
     "name": "Leitor Pro Max",
     "slug": "leitorpromax",
     "version": "1.0.0",
-    "orientation": "portrait",
-    "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
     "android": {
       "package": "com.erickleparkour.leitorpromax",
       "versionCode": 1
