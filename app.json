@@ -1,26 +1,12 @@
 {
   "expo": {
     "name": "Leitor Pro",
-    "slug": "leitor-pro",
+    "slug": "leitor-pro", 
     "version": "1.0.0",
-    "orientation": "portrait",
-    "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
     "android": {
       "package": "com.erick.leitorpro",
-      "versionCode": 1,
       "minSdkVersion": 23,
-      "compileSdkVersion": 34,
-      "targetSdkVersion": 34,
       "buildType": "apk"
-    },
-    "web": {
-      "favicon": "./assets/favicon.png"
     }
   }
 }
