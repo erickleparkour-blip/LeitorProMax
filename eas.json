@@ -1,17 +1,10 @@
 {
-  "cli": {
-    "version": ">= 12.0.0"
-  },
   "build": {
-    "preview": {
+    "production": {
       "android": {
         "buildType": "apk",
-        "image": "latest",
-        "node": "18.18.0",
         "env": {
-          "EAS_BUILD_SKIP_AUTO_FIX": "true",
-          "SKIP_EXPO_DOCTOR": "true",
-          "CI": "1"
+          "EXPO_NO_DOCTOR": "true"
         }
       }
     }
