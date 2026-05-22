@@ -5,7 +5,12 @@
   "build": {
     "preview": {
       "android": {
-        "buildType": "apk"
+        "buildType": "apk",
+        "image": "latest",
+        "node": "18.18.0",
+        "env": {
+          "EXPO_USE_LOCAL_CREDENTIALS": "true"
+        }
       }
     },
     "production": {}
