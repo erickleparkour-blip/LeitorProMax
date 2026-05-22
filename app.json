@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Leitor Pro Max",
-    "slug": "leitorpromax",
+    "slug": "leitor-pro-max",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
