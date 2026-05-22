@@ -1,39 +1,26 @@
 {
   "expo": {
-    "name": "Leitor Pro Max",
-    "slug": "leitor-pro-max",
+    "name": "Leitor Pro",
+    "slug": "leitor-pro",
     "version": "1.0.0",
     "orientation": "portrait",
-    "userInterfaceStyle": "automatic",
-    "assetBundlePatterns": ["**/*"],
-    "ios": {
-      "supportsTablet": true
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
     },
     "android": {
-      "package": "com.erickleparkour.leitorpromax",
+      "package": "com.erick.leitorpro",
       "versionCode": 1,
+      "minSdkVersion": 23,
       "compileSdkVersion": 34,
-      "targetSdkVersion": 34
+      "targetSdkVersion": 34,
+      "buildType": "apk"
     },
-    "owner": "erickrei5",
-    "plugins": [
-      [
-        "expo-build-properties",
-        {
-          "android": {
-            "compileSdkVersion": 34,
-            "targetSdkVersion": 34,
-            "buildToolsVersion": "34.0.0",
-            "kotlinVersion": "1.8.10",
-            "minSdkVersion": 21
-          }
-        }
-      ]
-    ],
-    "extra": {
-      "eas": {
-        "projectId": "ed8ac310-c4e7-495a-bb21-3a167c76c1d4"
-      }
+    "web": {
+      "favicon": "./assets/favicon.png"
     }
   }
 }
